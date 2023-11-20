@@ -35,7 +35,7 @@ export function TodoItemEditor(props: TodoItemEditorProps) {
                     if (todo) {
                         action = todoUpdated({...todo, title, content})
                     } else {
-                        action = addTodo({title, content})
+                        action = addTodo({title, content, marked: false})
                         setTitle("")
                         setContent("")
                     }

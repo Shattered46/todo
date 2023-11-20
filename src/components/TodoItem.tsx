@@ -8,10 +8,12 @@ export interface TodoItemProps {
 }
 
 export function TodoItem(props: TodoItemProps) {
-    const { title, content, id } = props.todoItem;
+    const { title, content, id, marked } = props.todoItem;
     const { onClick, onDelete, onMark } = props;
+
+    const className = `todo-item${marked ? '-marked' : ''}`;
     return (
-    <div className="todo-item">
+    <div className={className}>
         <div onClick={() => onClick && onClick(id)}>
             <p className="todo-item-title">{title}</p>
             <p className="todo-item-content">{content}</p>

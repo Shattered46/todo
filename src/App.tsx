@@ -2,7 +2,7 @@ import { useDispatch } from 'react-redux'
 import './App.css'
 import { TodoItem } from './components/TodoItem'
 import { sampleTodo } from './data/TodoItem'
-import { addTodo, deleteTodo, todoClicked, useStoreState } from './reducer/reducer'
+import { addTodo, deleteTodo, todoClicked, todoMarked, useStoreState } from './reducer/reducer'
 import { TodoItemEditor } from './components/TodoItemEditor'
 
 function App() {
@@ -15,6 +15,7 @@ function App() {
             todoItem={item}
             onClick={id => dispatch(todoClicked(id))}
             onDelete={id => dispatch(deleteTodo(id))}
+            onMark={id => dispatch(todoMarked(id))}
         />)
     return (
         <>

@@ -19,17 +19,17 @@ const enum ActionType {
     UpdatedTodo = 'todo/updated'
 }
 
-type DefaultState = {
+type State = {
     todos: TodoItemPojo[],
     lastId: number,
     editingTodo: TodoItemPojo | null,
 }
 
 export function useStoreState() {
-    return useSelector<DefaultState, DefaultState>(state => state)
+    return useSelector<State, State>(state => state)
 }
 
-const defaultState: DefaultState = {
+const defaultState: State = {
     todos: [],
     lastId: 0,
     editingTodo: null
@@ -39,16 +39,26 @@ export const store = createStore(todoReducer);
 export function todoReducer(state = defaultState, action: Action) {
     const newState = {...state};
     switch (action.type) {
-      case ActionType.AddTodo: {
-        const id = newState.lastId;
-        const todo = { id, ...action.todo }
-        newState.lastId = id + 1;
-        newState.todos = [todo, ...state.todos];
-        return newState
-      }
-      case ActionType.MarkCompleted:
+        case ActionType.AddTodo: {
+            const id = newState.lastId;
+            const todo = { id, ...action.todo }
+            newState.lastId = id + 1;
+            newState.todos = [todo, ...state.todos];
+            return newState
+        }
+        case ActionType.MarkCompleted: {
+            const idx = state.todos.findIndex(item => item.id === action.id);
+            if (idx != null) {
+                const oldTodo = state.todos[idx]
+                const newTodo = {...oldTodo, marked: !oldTodo.marked }
+                const newTodos = [...state.todos];
+                newTodos.splice(idx, 1, newTodo)
+                newState.todos = newTodos;
+            }
+            return newState;
+        }
 
-        return { ...state }
+        
         case ActionType.DeleteTodo: {
             const idx = state.todos.findIndex(item => item.id === action.id);
             if (idx != null) {
@@ -102,3 +112,6 @@ export function deleteTodo(id: number): DeleteTodo {
     return { type: ActionType.DeleteTodo, id }
 }
 
+export function todoMarked(id: number): MarkCompleted {
+    return { type: ActionType.MarkCompleted, id }
+}
