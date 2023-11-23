@@ -49,7 +49,7 @@ const Checkbox = styled.input.attrs<{ checked: boolean, onClick: ClickHandler }>
     align-self: center;
 `;
 const Title = styled.p`
-    height: 50px;
+    height: 25px;
     overflow: hidden;
     overflow-wrap: anywhere;
 `;
