@@ -4,11 +4,20 @@ import App from './App.tsx'
 import './index.css'
 import { Provider } from 'react-redux'
 import { store } from './reducer/reducer.ts'
+import { BrowserRouter } from 'react-router-dom'
+import axios from 'axios'
+
+axios.interceptors.request.use( config => {
+    config.headers.set('X-Custom-Header', 'custom value')
+    return config;    
+})
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
         <Provider store={store}>
-            <App/>
+            <BrowserRouter>
+                <App />
+            </BrowserRouter>
         </Provider>
     </React.StrictMode>,
 )

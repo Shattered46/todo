@@ -1,8 +1,15 @@
-import { createStore } from "redux";
+import { applyMiddleware, createStore } from "redux";
 import { NewTodoItem, TodoItemPojo } from "../data/TodoItem";
 import { useSelector } from "react-redux";
+import thunk from 'redux-thunk';
+import { RequestAction, todoRequestReducer } from "./requests";
+import { reducer as websocketReducer } from "./websocket";
+import { ServerMessage } from "./ws-messages";
 
-export type Action = AddTodo | DeleteTodo | MarkCompleted | UnmarkCompleted | ClickedTodo | UpdatedTodo;
+export type Action = TodoAction | RequestAction | ServerMessage;
+
+export type TodoAction = AddTodo | DeleteTodo | MarkCompleted | UnmarkCompleted | ClickedTodo | UpdatedTodo;
+
 export type AddTodo = { type: ActionType.AddTodo, todo: NewTodoItem }
 export type MarkCompleted = { type: ActionType.MarkCompleted, id: number }
 export type UnmarkCompleted = { type: ActionType.UnmarkCompleted, id: number }
@@ -19,25 +26,48 @@ const enum ActionType {
     UpdatedTodo = 'todo/updated'
 }
 
-type State = {
+export type State = {
     todos: TodoItemPojo[],
     lastId: number,
     editingTodo: TodoItemPojo | null,
+    requests: {
+        todos: Status
+    },
+    location: {
+        method: NavigationMethod,
+        path: string,
+    }
 }
 
 export function useStoreState() {
     return useSelector<State, State>(state => state)
 }
 
+export type Status = "start" | "success" | "error" | "none"
+export type NavigationMethod = 'none' | 'back' | 'forward'
+
+
 const defaultState: State = {
     todos: [],
     lastId: 0,
-    editingTodo: null
-}
-export const store = createStore(todoReducer);
+    editingTodo: null,
+    requests: {
+        todos: "none"
+    },
+    location: {
+        path: "/",
+        method: 'none'
+    }
 
-export function todoReducer(state = defaultState, action: Action) {
-    const newState = {...state};
+}
+export const store = createStore(todoReducer, applyMiddleware(thunk));
+
+export function todoIndex(todos: TodoItemPojo[], id: number): number {
+    return todos.findIndex(item => item.id === id);
+} 
+
+function todoReactReducer(state: State, action: TodoAction) {
+    const newState = {...state}
     switch (action.type) {
         case ActionType.AddTodo: {
             const id = newState.lastId;
@@ -86,13 +116,24 @@ export function todoReducer(state = defaultState, action: Action) {
                 newTodos.splice(idx, 1, newTodo);
                 newState.todos = newTodos
                 newState.editingTodo = null;
-            } else {
-                console.log(`Action: UpdatedTodo; Error: item not found;`)
             }
             return newState;
         }
+
+
       default:
         return state
+    }
+}
+
+export function todoReducer(state = defaultState, action: Action): State {
+    const type = action.type;
+    const parts = type.split('/');
+    switch (parts[0]) {
+        case 'request': return todoRequestReducer(state, action as RequestAction);
+        case 'todo': return todoReactReducer(state, action as TodoAction);
+        case 'ws': return websocketReducer(state, action as ServerMessage)
+        default: return state;
     }
 }
 
